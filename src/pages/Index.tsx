@@ -16,7 +16,6 @@ const Index = () => {
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
-  const [runwareKey, setRunwareKey] = useState("");
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -24,14 +23,9 @@ const Index = () => {
       return;
     }
 
-    if (!runwareKey) {
-      toast.error("Please enter your Runware API key");
-      return;
-    }
-
     setIsGenerating(true);
     try {
-      const runwareService = new RunwareService(runwareKey);
+      const runwareService = new RunwareService();
       const result = await runwareService.generateImage({
         positivePrompt: prompt,
       });
@@ -64,13 +58,6 @@ const Index = () => {
 
         <div className="space-y-8">
           <div className="flex flex-col items-center gap-6 w-full max-w-2xl mx-auto">
-            <TextPromptInput
-              placeholder="Enter your Runware API key..."
-              value={runwareKey}
-              onChange={(e) => setRunwareKey(e.target.value)}
-              type="password"
-              className="w-full"
-            />
             <div className="flex w-full gap-4">
               <TextPromptInput
                 placeholder="Describe the image you want to generate..."
