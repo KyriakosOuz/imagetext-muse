@@ -1,6 +1,8 @@
 
 import { toast } from "sonner";
 
+const API_ENDPOINT = "wss://ws-api.runware.ai/v1";
+
 export interface GenerateImageParams {
   positivePrompt: string;
   model?: string;
@@ -22,38 +24,147 @@ export interface GeneratedImage {
 }
 
 export class RunwareService {
-  private mockImageCategories = [
-    'ai', 'digital-art', 'fantasy', 'concept-art',
-    'illustration', '3d-rendering', 'abstract'
-  ];
+  private ws: WebSocket | null = null;
+  private apiKey: string | null = null;
+  private connectionSessionUUID: string | null = null;
+  private messageCallbacks: Map<string, (data: any) => void> = new Map();
+  private isAuthenticated: boolean = false;
+  private connectionPromise: Promise<void> | null = null;
 
-  constructor() {}
+  constructor(apiKey: string) {
+    this.apiKey = apiKey;
+    this.connectionPromise = this.connect();
+  }
+
+  private connect(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.ws = new WebSocket(API_ENDPOINT);
+      
+      this.ws.onopen = () => {
+        console.log("WebSocket connected");
+        this.authenticate().then(resolve).catch(reject);
+      };
+
+      this.ws.onmessage = (event) => {
+        console.log("WebSocket message received:", event.data);
+        const response = JSON.parse(event.data);
+        
+        if (response.error || response.errors) {
+          console.error("WebSocket error response:", response);
+          const errorMessage = response.errorMessage || response.errors?.[0]?.message || "An error occurred";
+          toast.error(errorMessage);
+          return;
+        }
+
+        if (response.data) {
+          response.data.forEach((item: any) => {
+            if (item.taskType === "authentication") {
+              console.log("Authentication successful, session UUID:", item.connectionSessionUUID);
+              this.connectionSessionUUID = item.connectionSessionUUID;
+              this.isAuthenticated = true;
+            } else {
+              const callback = this.messageCallbacks.get(item.taskUUID);
+              if (callback) {
+                callback(item);
+                this.messageCallbacks.delete(item.taskUUID);
+              }
+            }
+          });
+        }
+      };
+
+      this.ws.onerror = (error) => {
+        console.error("WebSocket error:", error);
+        toast.error("Connection error. Please try again.");
+        reject(error);
+      };
+
+      this.ws.onclose = () => {
+        console.log("WebSocket closed, attempting to reconnect...");
+        this.isAuthenticated = false;
+        setTimeout(() => {
+          this.connectionPromise = this.connect();
+        }, 1000);
+      };
+    });
+  }
+
+  private authenticate(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+        reject(new Error("WebSocket not ready for authentication"));
+        return;
+      }
+      
+      const authMessage = [{
+        taskType: "authentication",
+        apiKey: this.apiKey,
+        ...(this.connectionSessionUUID && { connectionSessionUUID: this.connectionSessionUUID }),
+      }];
+      
+      console.log("Sending authentication message");
+      
+      // Set up a one-time authentication callback
+      const authCallback = (event: MessageEvent) => {
+        const response = JSON.parse(event.data);
+        if (response.data?.[0]?.taskType === "authentication") {
+          this.ws?.removeEventListener("message", authCallback);
+          resolve();
+        }
+      };
+      
+      this.ws.addEventListener("message", authCallback);
+      this.ws.send(JSON.stringify(authMessage));
+    });
+  }
 
   async generateImage(params: GenerateImageParams): Promise<GeneratedImage> {
-    // Simulate API delay (randomized between 1-3 seconds)
-    const delay = 1000 + Math.random() * 2000;
-    await new Promise(resolve => setTimeout(resolve, delay));
+    // Wait for connection and authentication before proceeding
+    await this.connectionPromise;
 
-    // Generate a random seed
-    const seed = Math.floor(Math.random() * 1000000);
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN || !this.isAuthenticated) {
+      this.connectionPromise = this.connect();
+      await this.connectionPromise;
+    }
+
+    const taskUUID = crypto.randomUUID();
     
-    // Pick a random art category to better simulate AI-generated content
-    const randomCategory = this.mockImageCategories[
-      Math.floor(Math.random() * this.mockImageCategories.length)
-    ];
+    return new Promise((resolve, reject) => {
+      const message = [{
+        taskType: "imageInference",
+        taskUUID,
+        model: params.model || "runware:100@1",
+        width: 1024,
+        height: 1024,
+        numberResults: params.numberResults || 1,
+        outputFormat: params.outputFormat || "WEBP",
+        steps: 4,
+        CFGScale: params.CFGScale || 1,
+        scheduler: params.scheduler || "FlowMatchEulerDiscreteScheduler",
+        strength: params.strength || 0.8,
+        lora: params.lora || [],
+        ...params,
+      }];
 
-    // Use a combination of the prompt and art category for more relevant results
-    const searchQuery = `${params.positivePrompt},${randomCategory}`;
-    
-    // Add a random size parameter to get different images
-    const size = "1024x1024";
-    const timestamp = Date.now(); // Add timestamp to prevent caching
+      if (!params.seed) {
+        delete message[0].seed;
+      }
 
-    return {
-      imageURL: `https://source.unsplash.com/random/${size}/?${encodeURIComponent(searchQuery)}&t=${timestamp}`,
-      positivePrompt: params.positivePrompt,
-      seed: seed,
-      NSFWContent: false
-    };
+      if (message[0].model === "runware:100@1") {
+        delete message[0].promptWeighting;
+      }
+
+      console.log("Sending image generation message:", message);
+
+      this.messageCallbacks.set(taskUUID, (data) => {
+        if (data.error) {
+          reject(new Error(data.errorMessage));
+        } else {
+          resolve(data);
+        }
+      });
+
+      this.ws.send(JSON.stringify(message));
+    });
   }
 }

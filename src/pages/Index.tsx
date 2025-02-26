@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import TextPromptInput from "@/components/TextPromptInput";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -14,8 +15,21 @@ interface GeneratedImage {
 
 const Index = () => {
   const [prompt, setPrompt] = useState("");
+  const [apiKey, setApiKey] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
+  const [runwareService, setRunwareService] = useState<RunwareService | null>(null);
+
+  const initializeRunware = () => {
+    if (!apiKey.trim()) {
+      toast.error("Please enter your Runware API key");
+      return false;
+    }
+    if (!runwareService) {
+      setRunwareService(new RunwareService(apiKey));
+    }
+    return true;
+  };
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -23,10 +37,13 @@ const Index = () => {
       return;
     }
 
+    if (!initializeRunware()) {
+      return;
+    }
+
     setIsGenerating(true);
     try {
-      const runwareService = new RunwareService();
-      const result = await runwareService.generateImage({
+      const result = await runwareService!.generateImage({
         positivePrompt: prompt,
       });
 
@@ -37,8 +54,9 @@ const Index = () => {
       
       toast.success("Image generated successfully!");
     } catch (error) {
-      toast.error("Failed to generate image. Please try again.");
+      toast.error("Failed to generate image. Please check your API key and try again.");
       console.error("Generation error:", error);
+      setRunwareService(null); // Reset service on error
     } finally {
       setIsGenerating(false);
     }
@@ -58,6 +76,13 @@ const Index = () => {
 
         <div className="space-y-8">
           <div className="flex flex-col items-center gap-6 w-full max-w-2xl mx-auto">
+            <Input
+              type="password"
+              placeholder="Enter your Runware API key..."
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              className="bg-white/10 border-white/10 text-white placeholder:text-white/50"
+            />
             <div className="flex w-full gap-4">
               <TextPromptInput
                 placeholder="Describe the image you want to generate..."
