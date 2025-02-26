@@ -1,11 +1,105 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import TextPromptInput from "@/components/TextPromptInput";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import ImageCard from "@/components/ImageCard";
+import { RunwareService } from "../services/runware";
+
+interface GeneratedImage {
+  imageURL: string;
+  positivePrompt: string;
+}
 
 const Index = () => {
+  const [prompt, setPrompt] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
+  const [runwareKey, setRunwareKey] = useState("");
+
+  const handleGenerate = async () => {
+    if (!prompt.trim()) {
+      toast.error("Please enter a prompt first");
+      return;
+    }
+
+    if (!runwareKey) {
+      toast.error("Please enter your Runware API key");
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const runwareService = new RunwareService(runwareKey);
+      const result = await runwareService.generateImage({
+        positivePrompt: prompt,
+      });
+
+      setGeneratedImages((prev) => [{
+        imageURL: result.imageURL,
+        positivePrompt: prompt
+      }, ...prev]);
+      
+      toast.success("Image generated successfully!");
+    } catch (error) {
+      toast.error("Failed to generate image. Please try again.");
+      console.error("Generation error:", error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white p-8">
+      <div className="max-w-7xl mx-auto space-y-12">
+        <div className="text-center space-y-4">
+          <h1 className="text-4xl font-bold tracking-tight sm:text-6xl bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-300">
+            Text to Image Generator
+          </h1>
+          <p className="text-lg text-slate-300 max-w-2xl mx-auto">
+            Transform your ideas into stunning visuals with AI-powered image generation
+          </p>
+        </div>
+
+        <div className="space-y-8">
+          <div className="flex flex-col items-center gap-6 w-full max-w-2xl mx-auto">
+            <TextPromptInput
+              placeholder="Enter your Runware API key..."
+              value={runwareKey}
+              onChange={(e) => setRunwareKey(e.target.value)}
+              type="password"
+              className="w-full"
+            />
+            <div className="flex w-full gap-4">
+              <TextPromptInput
+                placeholder="Describe the image you want to generate..."
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                className="w-full"
+              />
+              <Button
+                onClick={handleGenerate}
+                disabled={isGenerating}
+                className="px-8 h-14 bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/10 rounded-2xl transition-all duration-300"
+              >
+                {isGenerating ? "Generating..." : "Generate"}
+              </Button>
+            </div>
+          </div>
+
+          {isGenerating && <LoadingSpinner />}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {generatedImages.map((image, index) => (
+              <ImageCard
+                key={index}
+                src={image.imageURL}
+                alt={image.positivePrompt}
+              />
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
