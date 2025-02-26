@@ -18,17 +18,15 @@ const Index = () => {
   const [apiKey, setApiKey] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
-  const [runwareService, setRunwareService] = useState<RunwareService | null>(null);
 
-  const initializeRunware = () => {
-    if (!apiKey.trim()) {
-      toast.error("Please enter your Runware API key");
-      return false;
+  const initializeRunware = (key: string) => {
+    try {
+      return new RunwareService(key);
+    } catch (error) {
+      console.error("Failed to initialize Runware service:", error);
+      toast.error("Failed to initialize service. Please check your API key.");
+      return null;
     }
-    if (!runwareService) {
-      setRunwareService(new RunwareService(apiKey));
-    }
-    return true;
   };
 
   const handleGenerate = async () => {
@@ -37,13 +35,19 @@ const Index = () => {
       return;
     }
 
-    if (!initializeRunware()) {
+    if (!apiKey.trim()) {
+      toast.error("Please enter your Runware API key");
       return;
     }
 
     setIsGenerating(true);
     try {
-      const result = await runwareService!.generateImage({
+      const service = initializeRunware(apiKey);
+      if (!service) {
+        throw new Error("Failed to initialize service");
+      }
+
+      const result = await service.generateImage({
         positivePrompt: prompt,
       });
 
@@ -56,7 +60,6 @@ const Index = () => {
     } catch (error) {
       toast.error("Failed to generate image. Please check your API key and try again.");
       console.error("Generation error:", error);
-      setRunwareService(null); // Reset service on error
     } finally {
       setIsGenerating(false);
     }
