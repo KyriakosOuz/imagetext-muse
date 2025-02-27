@@ -133,12 +133,20 @@ const DemoSection = ({ isVisible }: DemoSectionProps) => {
         </div>
 
         <div className="rounded-3xl overflow-hidden backdrop-blur-sm bg-white/5 border border-white/10 p-8">
-          <Tabs defaultValue="demo" value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-8">
-              <TabsTrigger value="demo" className="data-[state=active]:bg-indigo-600 rounded-full">Generate Image</TabsTrigger>
-              <TabsTrigger value="extract" className="data-[state=active]:bg-indigo-600 rounded-full">Extract Text</TabsTrigger>
-              <TabsTrigger value="gallery" className="data-[state=active]:bg-indigo-600 rounded-full">Gallery</TabsTrigger>
-            </TabsList>
+          <Tabs defaultValue="demo" value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <div className="flex justify-center mb-8">
+              <TabsList className="w-full max-w-md mx-auto">
+                <TabsTrigger value="demo">
+                  <span className="relative z-10">Generate Image</span>
+                </TabsTrigger>
+                <TabsTrigger value="extract">
+                  <span className="relative z-10">Extract Text</span>
+                </TabsTrigger>
+                <TabsTrigger value="gallery">
+                  <span className="relative z-10">Gallery</span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
             
             <TabsContent value="demo" className="space-y-8">
               <div className="space-y-6">
