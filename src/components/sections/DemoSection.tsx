@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -9,6 +9,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import ImageCard from "@/components/ImageCard";
 import { RunwareService } from "../../services/runware";
 import { SamplePrompts, sampleImages } from "@/data/landingPageData";
+import { Upload } from "lucide-react";
 
 interface GeneratedImage {
   imageURL: string;
@@ -27,6 +28,9 @@ const DemoSection = ({ isVisible }: DemoSectionProps) => {
   const [activeTab, setActiveTab] = useState("demo");
   const [processingStage, setProcessingStage] = useState("");
   const [selectedSampleImage, setSelectedSampleImage] = useState<string | null>(null);
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [extractedText, setExtractedText] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Handler for processing stage simulation
   const simulateProcessing = () => {
@@ -92,12 +96,14 @@ const DemoSection = ({ isVisible }: DemoSectionProps) => {
 
   const handleSampleImageClick = (imageUrl: string) => {
     setSelectedSampleImage(imageUrl);
+    setUploadedImage(null);
+    setExtractedText(null);
     toast.info("Sample image selected! Click 'Process Image' to extract text.");
   };
 
   const handleProcessSampleImage = () => {
-    if (!selectedSampleImage) {
-      toast.error("Please select a sample image first");
+    if (!selectedSampleImage && !uploadedImage) {
+      toast.error("Please select or upload an image first");
       return;
     }
     
@@ -106,10 +112,44 @@ const DemoSection = ({ isVisible }: DemoSectionProps) => {
     
     // Simulate processing with a delay
     setTimeout(() => {
+      const mockExtractedText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
+      setExtractedText(mockExtractedText);
       toast.success("Image processed! Text extracted successfully.");
       setIsGenerating(false);
       setProcessingStage("");
     }, 5000);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    // Check file size (limit to 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File size exceeds 5MB limit");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setUploadedImage(event.target.result.toString());
+        setSelectedSampleImage(null);
+        setExtractedText(null);
+        toast.info("Image uploaded! Click 'Process Image' to extract text.");
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
   };
 
   return (
@@ -135,7 +175,7 @@ const DemoSection = ({ isVisible }: DemoSectionProps) => {
         <div className="rounded-3xl overflow-hidden backdrop-blur-sm bg-white/5 border border-white/10 p-8">
           <Tabs defaultValue="demo" value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="flex justify-center mb-8">
-              <TabsList className="w-full max-w-md mx-auto">
+              <TabsList className="w-full max-w-md mx-auto grid grid-cols-3">
                 <TabsTrigger value="demo">
                   <span className="relative z-10">Generate Image</span>
                 </TabsTrigger>
@@ -173,7 +213,7 @@ const DemoSection = ({ isVisible }: DemoSectionProps) => {
                         variant="outline"
                         size="sm"
                         onClick={() => handleSamplePromptClick(samplePrompt)}
-                        className="bg-white/5 border-white/10 hover:bg-white/10"
+                        className="bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white"
                       >
                         {samplePrompt}
                       </Button>
@@ -213,8 +253,44 @@ const DemoSection = ({ isVisible }: DemoSectionProps) => {
             
             <TabsContent value="extract" className="space-y-8">
               <div className="text-center space-y-6">
-                <h3 className="text-xl font-medium mb-4">Select a Sample Image to Extract Text</h3>
-                <p className="text-slate-300 mb-4">Click on an image below to test our AI text extraction</p>
+                <h3 className="text-xl font-medium mb-4">Extract Text from an Image</h3>
+                <p className="text-slate-300 mb-4">Upload your own image or select a sample below</p>
+                
+                {/* Image Upload Section */}
+                <div className="max-w-md mx-auto">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  <Button
+                    onClick={triggerFileInput}
+                    variant="outline"
+                    className="w-full py-8 flex flex-col items-center justify-center space-y-3 bg-white/5 border-dashed border-2 border-white/20 rounded-xl hover:bg-white/10 transition-all duration-300"
+                  >
+                    <Upload size={40} className="text-indigo-400" />
+                    <span className="text-slate-300">
+                      Click to upload an image
+                    </span>
+                    <span className="text-slate-400 text-sm">
+                      (Maximum file size: 5MB)
+                    </span>
+                  </Button>
+                </div>
+
+                {uploadedImage && (
+                  <div className="max-w-md mx-auto border-2 rounded-xl overflow-hidden border-indigo-500/30">
+                    <img 
+                      src={uploadedImage} 
+                      alt="Uploaded image" 
+                      className="w-full h-auto"
+                    />
+                  </div>
+                )}
+                
+                <p className="text-slate-300 font-medium">OR</p>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                   {sampleImages.map((image, index) => (
@@ -237,7 +313,7 @@ const DemoSection = ({ isVisible }: DemoSectionProps) => {
                 
                 <Button
                   onClick={handleProcessSampleImage}
-                  disabled={isGenerating || !selectedSampleImage}
+                  disabled={isGenerating || (!selectedSampleImage && !uploadedImage)}
                   className="mt-6 h-14 px-8 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 rounded-xl transition-all duration-300"
                 >
                   {isGenerating ? "Processing..." : "Process Image"}
@@ -250,12 +326,23 @@ const DemoSection = ({ isVisible }: DemoSectionProps) => {
                   </div>
                 )}
                 
-                {selectedSampleImage && !isGenerating && (
+                {(selectedSampleImage || uploadedImage) && !isGenerating && extractedText && (
                   <div className="mt-8 p-6 bg-slate-800/50 rounded-xl border border-white/10">
                     <h4 className="font-medium mb-2">Extracted Content:</h4>
                     <div className="p-4 bg-black/20 rounded-lg text-left">
                       <p className="text-slate-300 font-mono text-sm">
-                        Select an image and click "Process Image" to extract text using our AI.
+                        {extractedText}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                
+                {(selectedSampleImage || uploadedImage) && !isGenerating && !extractedText && (
+                  <div className="mt-8 p-6 bg-slate-800/50 rounded-xl border border-white/10">
+                    <h4 className="font-medium mb-2">Extracted Content:</h4>
+                    <div className="p-4 bg-black/20 rounded-lg text-left">
+                      <p className="text-slate-300 font-mono text-sm">
+                        Click "Process Image" to extract text using our AI.
                       </p>
                     </div>
                   </div>
