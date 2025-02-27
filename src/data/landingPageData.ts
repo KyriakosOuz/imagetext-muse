@@ -1,69 +1,109 @@
 
-import { ReactNode } from "react";
-import { Image, Text, Sparkles, Upload, Zap, Check, Camera, FileText, Brain, Trophy, Users, Clock } from "lucide-react";
+import { LucideIcon } from "lucide-react";
+
+// Importing all icons that we need
+import { 
+  Image, 
+  Text, 
+  Sparkles, 
+  Upload, 
+  Zap, 
+  Check, 
+  Camera, 
+  FileText, 
+  Brain, 
+  Trophy, 
+  Users, 
+  Clock 
+} from "lucide-react";
+
+// Define feature data types
+export interface FeatureItem {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  demoContent: {
+    heading: string;
+    processingText: string;
+    resultText: string;
+    hasSpecialFormat?: boolean;
+  };
+}
+
+// Define how it works data types
+export interface HowItWorksItem {
+  number: number;
+  title: string;
+  description: string;
+  icon: LucideIcon;
+}
 
 // Sample Features Data with richer content
-export const featureData = [
+export const featureData: FeatureItem[] = [
   {
-    icon: <Image className="text-indigo-500" size={24} />,
+    icon: Image,
     title: "AI Image-to-Text Extraction",
     description: "Convert any image into editable, searchable text with our advanced AI recognition technology.",
-    demo: <div className="rounded-lg overflow-hidden bg-slate-800 p-3 text-xs">
-      <div className="text-slate-400 mb-1">// AI Text Extraction Demo</div>
-      <div className="text-green-400">AI analyzing image...</div>
-      <div className="text-white mt-1">Extracted text: "The quick brown fox jumps over the lazy dog."</div>
-    </div>
+    demoContent: {
+      heading: "// AI Text Extraction Demo",
+      processingText: "AI analyzing image...",
+      resultText: "Extracted text: \"The quick brown fox jumps over the lazy dog.\"",
+      hasSpecialFormat: false
+    }
   },
   {
-    icon: <Text className="text-rose-500" size={24} />,
+    icon: Text,
     title: "AI-Powered Captions",
     description: "Generate creative descriptions and captions for your images automatically with just one click.",
-    demo: <div className="rounded-lg overflow-hidden bg-slate-800 p-3 text-xs">
-      <div className="text-slate-400 mb-1">// AI Caption Generator</div>
-      <div className="text-green-400">Generating creative caption...</div>
-      <div className="text-white mt-1">"Sunset views that paint the sky with dreams and possibilities. #NatureInspires"</div>
-    </div>
+    demoContent: {
+      heading: "// AI Caption Generator",
+      processingText: "Generating creative caption...",
+      resultText: "\"Sunset views that paint the sky with dreams and possibilities. #NatureInspires\"",
+      hasSpecialFormat: false
+    }
   },
   {
-    icon: <Sparkles className="text-amber-500" size={24} />,
+    icon: Sparkles,
     title: "Auto-Stylized Text",
     description: "Transform extracted text into artistic typography and designs perfect for social media and marketing.",
-    demo: <div className="rounded-lg overflow-hidden bg-slate-800 p-3 text-xs">
-      <div className="text-slate-400 mb-1">// Typography Enhancement</div>
-      <div className="text-green-400">Applying style templates...</div>
-      <div className="mt-1 p-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold text-center rounded">ADVENTURE AWAITS</div>
-    </div>
+    demoContent: {
+      heading: "// Typography Enhancement",
+      processingText: "Applying style templates...",
+      resultText: "ADVENTURE AWAITS",
+      hasSpecialFormat: true
+    }
   },
   {
-    icon: <Zap className="text-emerald-500" size={24} />,
+    icon: Zap,
     title: "AI Scene Recognition",
     description: "Identify objects, people, and places in images with high accuracy to generate context-aware text.",
-    demo: <div className="rounded-lg overflow-hidden bg-slate-800 p-3 text-xs">
-      <div className="text-slate-400 mb-1">// AI Scene Analysis</div>
-      <div className="text-green-400">Analyzing image elements...</div>
-      <div className="text-white mt-1">Detected: Mountain (98%), Sunset (94%), Hikers (87%), Forest (82%)</div>
-    </div>
+    demoContent: {
+      heading: "// AI Scene Analysis",
+      processingText: "Analyzing image elements...",
+      resultText: "Detected: Mountain (98%), Sunset (94%), Hikers (87%), Forest (82%)",
+      hasSpecialFormat: false
+    }
   }
 ];
 
-export const howItWorksData = [
+export const howItWorksData: HowItWorksItem[] = [
   {
     number: 1,
     title: "Upload Your Image",
     description: "Drag and drop or choose any image file from your device.",
-    icon: <Upload />
+    icon: Upload
   },
   {
     number: 2,
     title: "AI Analysis",
     description: "Our advanced AI extracts and enhances text from your image.",
-    icon: <Sparkles />
+    icon: Sparkles
   },
   {
     number: 3,
     title: "Receive Results",
     description: "Download or customize the generated text and images.",
-    icon: <Check />
+    icon: Check
   }
 ];
 

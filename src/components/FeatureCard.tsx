@@ -1,46 +1,50 @@
 
-import { ReactNode, useState } from "react";
-import { cn } from "@/lib/utils";
+import { LucideIcon } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface FeatureCardProps {
-  icon: ReactNode;
+  icon: LucideIcon;
   title: string;
   description: string;
-  delay?: number;
-  demo?: ReactNode;
+  delay: number;
+  demoContent: {
+    heading: string;
+    processingText: string;
+    resultText: string;
+    hasSpecialFormat?: boolean;
+  };
 }
 
-const FeatureCard = ({ icon, title, description, delay = 0, demo }: FeatureCardProps) => {
-  const [isHovered, setIsHovered] = useState(false);
-  
+const FeatureCard = ({ icon: Icon, title, description, delay, demoContent }: FeatureCardProps) => {
   return (
-    <div 
-      className="relative group overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 p-6 transition-all duration-500 hover:shadow-xl hover:scale-[1.02] hover:bg-white/10"
-      style={{ animationDelay: `${delay}s` }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay }}
+      viewport={{ once: true }}
+      className="p-6 rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 via-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0"></div>
-      
-      <div className="relative z-10 space-y-4">
-        <div className="p-3 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-xl inline-block mb-2 transition-all duration-300 group-hover:from-indigo-500/20 group-hover:to-purple-500/20">
-          {icon}
+      <div className="flex items-center mb-4">
+        <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center mr-3">
+          <Icon className="w-6 h-6" />
         </div>
-        <h3 className="text-xl font-semibold">{title}</h3>
-        <p className="text-slate-300">{description}</p>
+        <h3 className="text-xl font-bold">{title}</h3>
+      </div>
+      <p className="text-slate-300 mb-4">{description}</p>
+      
+      <div className="rounded-lg overflow-hidden bg-slate-800 p-3 text-xs">
+        <div className="text-slate-400 mb-1">{demoContent.heading}</div>
+        <div className="text-green-400">{demoContent.processingText}</div>
         
-        {demo && (
-          <div className={cn(
-            "mt-4 pt-4 border-t border-white/10 transition-all duration-500",
-            isHovered ? "opacity-100 max-h-96" : "opacity-0 max-h-0 overflow-hidden"
-          )}>
-            {demo}
+        {demoContent.hasSpecialFormat ? (
+          <div className="mt-1 p-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold text-center rounded">
+            {demoContent.resultText}
           </div>
+        ) : (
+          <div className="text-white mt-1">{demoContent.resultText}</div>
         )}
       </div>
-      
-      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500/0 via-indigo-500/0 to-purple-500/0 group-hover:from-indigo-500 group-hover:via-purple-500 group-hover:to-pink-500 transition-all duration-500"></div>
-    </div>
+    </motion.div>
   );
 };
 
