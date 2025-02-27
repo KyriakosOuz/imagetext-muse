@@ -20,10 +20,10 @@ const FeaturesSection = ({ isVisible }: FeaturesSectionProps) => {
             </span>
           </div>
           <h2 className="text-3xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-300">
-            AI-Powered Text & Image Tools
+            AI-Powered Text & Image Conversion
           </h2>
           <p className="text-xl text-slate-300 max-w-2xl mx-auto">
-            Our platform combines cutting-edge AI technology to extract, enhance, and generate text from images.
+            Our platform combines cutting-edge AI to transform text into images and extract text from images with exceptional accuracy.
           </p>
         </div>
 

@@ -1,4 +1,3 @@
-
 import { LucideIcon } from "lucide-react";
 
 // Importing all icons that we need
@@ -53,21 +52,21 @@ export const featureData: FeatureItem[] = [
   },
   {
     icon: Text,
-    title: "AI-Powered Captions",
-    description: "Generate creative descriptions and captions for your images automatically with just one click.",
+    title: "Text-to-Image Generation",
+    description: "Transform your text descriptions into stunning, realistic images with just a few clicks.",
     demoContent: {
-      heading: "// AI Caption Generator",
-      processingText: "Generating creative caption...",
-      resultText: "\"Sunset views that paint the sky with dreams and possibilities. #NatureInspires\"",
+      heading: "// AI Image Generator",
+      processingText: "Creating visual from text...",
+      resultText: "\"Vibrant sunset over mountains with reflections in a calm lake\"",
       hasSpecialFormat: false
     }
   },
   {
     icon: Sparkles,
-    title: "Auto-Stylized Text",
-    description: "Transform extracted text into artistic typography and designs perfect for social media and marketing.",
+    title: "Auto-Stylized Content",
+    description: "Transform extracted text or generated images with artistic styles perfect for social media and marketing.",
     demoContent: {
-      heading: "// Typography Enhancement",
+      heading: "// Style Enhancement",
       processingText: "Applying style templates...",
       resultText: "ADVENTURE AWAITS",
       hasSpecialFormat: true
@@ -75,11 +74,11 @@ export const featureData: FeatureItem[] = [
   },
   {
     icon: Zap,
-    title: "AI Scene Recognition",
-    description: "Identify objects, people, and places in images with high accuracy to generate context-aware text.",
+    title: "AI Context Analysis",
+    description: "Our AI understands the context of your content to deliver more accurate text extraction and image generation.",
     demoContent: {
-      heading: "// AI Scene Analysis",
-      processingText: "Analyzing image elements...",
+      heading: "// AI Context Analysis",
+      processingText: "Analyzing contextual elements...",
       resultText: "Detected: Mountain (98%), Sunset (94%), Hikers (87%), Forest (82%)",
       hasSpecialFormat: false
     }
