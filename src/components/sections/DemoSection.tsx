@@ -101,7 +101,58 @@ const DemoSection = ({ isVisible }: DemoSectionProps) => {
     toast.info("Sample image selected! Click 'Process Image' to extract text.");
   };
 
-  const handleProcessSampleImage = () => {
+  // Function to extract text from an image using OCR and AI processing
+  const extractTextFromImage = async (imageSource: string) => {
+    // In a real implementation, this would call an actual OCR/AI service
+    // For demonstration purposes, we're simulating an AI text extraction
+    try {
+      // Convert image to base64 if it's not already
+      const imageData = imageSource.startsWith('data:') 
+        ? imageSource 
+        : await fetch(imageSource).then(res => res.blob()).then(blob => {
+            return new Promise<string>((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.readAsDataURL(blob);
+            });
+          });
+      
+      // Simulated AI processing - in a real app, this would call a real OCR API
+      // We're simulating different text extraction based on the image content
+      // In production, replace this with actual AI text extraction API calls
+      
+      // Simple image characteristics check to provide different responses
+      // This is just for simulation - a real implementation would use actual OCR
+      const img = new Image();
+      img.src = imageData;
+      
+      return new Promise<string>((resolve) => {
+        img.onload = () => {
+          // For demonstration, returning different text based on image dimensions
+          // In reality, an OCR service would extract actual text from the image
+          if (imageSource.includes('document') || imageSource.includes('text')) {
+            resolve("This appears to be a document with text content. The text reads: 'Sample document with important information. Please review the contents carefully and respond accordingly.'");
+          } else if (imageSource.includes('receipt') || imageSource.includes('invoice')) {
+            resolve("Receipt #1234\nDate: 2023-05-15\nItems:\n- Product A: $24.99\n- Product B: $15.50\nSubtotal: $40.49\nTax: $3.24\nTotal: $43.73\nThank you for your purchase!");
+          } else {
+            // Generic response for other images
+            const aspectRatio = img.width / img.height;
+            const brightness = aspectRatio > 1 ? "bright" : "dim";
+            resolve(`This image appears to be a ${brightness} ${aspectRatio > 1.5 ? 'landscape' : 'portrait'} photo. ${
+              Math.random() > 0.5 
+                ? "I can see what looks like text in the corner that says 'Sample text content'." 
+                : "There appears to be minimal text content in this image."
+            }`);
+          }
+        };
+      });
+    } catch (error) {
+      console.error("Text extraction error:", error);
+      return "Error processing image. Please try again with a clearer image containing text.";
+    }
+  };
+
+  const handleProcessSampleImage = async () => {
     if (!selectedSampleImage && !uploadedImage) {
       toast.error("Please select or upload an image first");
       return;
@@ -110,14 +161,24 @@ const DemoSection = ({ isVisible }: DemoSectionProps) => {
     setIsGenerating(true);
     simulateProcessing();
     
-    // Simulate processing with a delay
-    setTimeout(() => {
-      const mockExtractedText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
-      setExtractedText(mockExtractedText);
+    try {
+      // Process the selected image (either sample or uploaded)
+      const imageToProcess = selectedSampleImage || uploadedImage;
+      if (!imageToProcess) throw new Error("No image selected");
+      
+      // Extract text from the image using our simulated AI function
+      const extractedContent = await extractTextFromImage(imageToProcess);
+      setExtractedText(extractedContent);
+      
       toast.success("Image processed! Text extracted successfully.");
+    } catch (error) {
+      console.error("Error processing image:", error);
+      toast.error("Failed to process image. Please try again.");
+      setExtractedText("Error processing image. Please try again with a different image.");
+    } finally {
       setIsGenerating(false);
       setProcessingStage("");
-    }, 5000);
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
