@@ -35,7 +35,7 @@ const FeaturesSection = ({ isVisible }: FeaturesSectionProps) => {
               title={feature.title}
               description={feature.description}
               delay={index * 0.1}
-              demo={feature.demo}
+              demoContent={feature.demoContent}
             />
           ))}
         </div>
