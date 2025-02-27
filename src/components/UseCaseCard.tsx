@@ -16,12 +16,12 @@ const UseCaseCard = ({ title, description, image, delay = 0, ctaText, onClick }:
   
   return (
     <div 
-      className="relative group overflow-hidden rounded-2xl transition-all duration-500 hover:shadow-2xl transform hover:-translate-y-1"
+      className="flex flex-col md:flex-row gap-8 rounded-2xl overflow-hidden transition-all duration-500 hover:shadow-2xl transform hover:-translate-y-1"
       style={{ animationDelay: `${delay}s` }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="aspect-video overflow-hidden relative">
+      <div className="w-full md:w-1/2 aspect-video overflow-hidden relative rounded-2xl">
         <img
           src={image}
           alt={title}
@@ -30,24 +30,23 @@ const UseCaseCard = ({ title, description, image, delay = 0, ctaText, onClick }:
             isHovered ? "scale-110" : "scale-100"
           )}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-transparent opacity-90"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-transparent opacity-70"></div>
       </div>
       
-      <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-        <h3 className="text-xl font-semibold mb-2">{title}</h3>
-        <p className="text-slate-300 mb-4">{description}</p>
+      <div className="w-full md:w-1/2 p-6 flex flex-col justify-center bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl">
+        <h3 className="text-2xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">{title}</h3>
+        <p className="text-slate-300 mb-6 text-lg">{description}</p>
         
         {ctaText && onClick && (
           <button 
             onClick={onClick}
             className={cn(
-              "text-sm font-medium px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300",
-              "flex items-center gap-2 backdrop-blur-sm border border-white/10 transform",
-              isHovered ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
+              "text-base font-medium px-6 py-3 rounded-full transition-all duration-300 self-start",
+              "bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:shadow-lg hover:shadow-indigo-500/30"
             )}
           >
             {ctaText}
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-2 inline">
               <path d="M5 12h14"></path>
               <path d="M12 5l7 7-7 7"></path>
             </svg>
